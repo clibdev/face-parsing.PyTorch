@@ -75,7 +75,7 @@ class AttentionRefinementModule(nn.Module):
 
     def forward(self, x):
         feat = self.conv(x)
-        atten = F.avg_pool2d(feat, feat.size()[2:])
+        atten = F.adaptive_avg_pool2d(feat, output_size=(1, 1))
         atten = self.conv_atten(atten)
         atten = self.bn_atten(atten)
         atten = self.sigmoid_atten(atten)
@@ -90,9 +90,9 @@ class AttentionRefinementModule(nn.Module):
 
 
 class ContextPath(nn.Module):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, training=True, *args, **kwargs):
         super(ContextPath, self).__init__()
-        self.resnet = Resnet18()
+        self.resnet = Resnet18(training)
         self.arm16 = AttentionRefinementModule(256, 128)
         self.arm32 = AttentionRefinementModule(512, 128)
         self.conv_head32 = ConvBNReLU(128, 128, ks=3, stride=1, padding=1)
@@ -108,7 +108,7 @@ class ContextPath(nn.Module):
         H16, W16 = feat16.size()[2:]
         H32, W32 = feat32.size()[2:]
 
-        avg = F.avg_pool2d(feat32, feat32.size()[2:])
+        avg = F.adaptive_avg_pool2d(feat32, output_size=(1, 1))
         avg = self.conv_avg(avg)
         avg_up = F.interpolate(avg, (H32, W32), mode='nearest')
 
@@ -200,7 +200,7 @@ class FeatureFusionModule(nn.Module):
     def forward(self, fsp, fcp):
         fcat = torch.cat([fsp, fcp], dim=1)
         feat = self.convblk(fcat)
-        atten = F.avg_pool2d(feat, feat.size()[2:])
+        atten = F.adaptive_avg_pool2d(feat, output_size=(1, 1))
         atten = self.conv1(atten)
         atten = self.relu(atten)
         atten = self.conv2(atten)
@@ -228,9 +228,9 @@ class FeatureFusionModule(nn.Module):
 
 
 class BiSeNet(nn.Module):
-    def __init__(self, n_classes, *args, **kwargs):
+    def __init__(self, n_classes, training=True, *args, **kwargs):
         super(BiSeNet, self).__init__()
-        self.cp = ContextPath()
+        self.cp = ContextPath(training)
         ## here self.sp is deleted
         self.ffm = FeatureFusionModule(256, 256)
         self.conv_out = BiSeNetOutput(256, 256, n_classes)
