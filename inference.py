@@ -6,10 +6,10 @@ import argparse
 from model import BiSeNet
 
 colors = [
-    [255, 0, 0], [255, 85, 0], [255, 170, 0], [255, 0, 85], [255, 0, 170], [0, 255, 0], [85, 255, 0], [170, 255, 0],
-    [0, 255, 85], [0, 255, 170], [0, 0, 255], [85, 0, 255], [170, 0, 255], [0, 85, 255], [0, 170, 255], [255, 255, 0],
-    [255, 255, 85], [255, 255, 170], [255, 0, 255], [255, 85, 255], [255, 170, 255], [0, 255, 255], [85, 255, 255],
-    [170, 255, 255],
+    [255, 255, 255], [255, 0, 0], [255, 85, 0], [255, 170, 0], [255, 0, 85], [255, 0, 170], [0, 255, 0], [85, 255, 0],
+    [170, 255, 0], [0, 255, 85], [0, 255, 170], [0, 0, 255], [85, 0, 255], [170, 0, 255], [0, 85, 255], [0, 170, 255],
+    [255, 255, 0], [255, 255, 85], [255, 255, 170], [255, 0, 255], [255, 85, 255], [255, 170, 255], [0, 255, 255],
+    [85, 255, 255], [170, 255, 255],
 ]
 
 attributes = [
@@ -52,14 +52,12 @@ if __name__ == '__main__':
         found_attributes = [attributes[idx] for idx in np.unique(out)]
         print(found_attributes)
 
-        vis_parsing_anno_color = np.zeros((out.shape[0], out.shape[1], 3)) + 255
+        out_colored = np.zeros((out.shape[0], out.shape[1], 3), np.uint8)
         num_of_class = np.max(out)
 
-        for pi in range(1, num_of_class + 1):
+        for pi in range(0, num_of_class + 1):
             index = np.where(out == pi)
-            vis_parsing_anno_color[index[0], index[1], :] = colors[pi]
+            out_colored[index[0], index[1], :] = colors[pi]
 
-        vis_parsing_anno_color = vis_parsing_anno_color.astype(np.uint8)
-
-        vis_im = cv2.addWeighted(orignal, 0.4, vis_parsing_anno_color, 0.6, 0)
-        cv2.imwrite(args.output_path, vis_im)
+        result = cv2.addWeighted(orignal, 0.4, out_colored, 0.6, 0)
+        cv2.imwrite(args.output_path, result)
