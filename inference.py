@@ -39,8 +39,8 @@ if __name__ == '__main__':
 
     with torch.no_grad():
         orignal = cv2.imread(args.image_path)
-        orignal = cv2.resize(orignal, (512, 512))
-        img = cv2.cvtColor(orignal, cv2.COLOR_BGR2RGB)
+        img = cv2.resize(orignal, (512, 512))
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         img = to_tensor(img)
         img = torch.unsqueeze(img, 0)
         img = img.to(device)
@@ -48,6 +48,7 @@ if __name__ == '__main__':
         out = net(img)[0]
         out = out.squeeze(0).cpu().numpy().argmax(0)
         out = out.astype(np.uint8)
+        out = cv2.resize(out, (orignal.shape[0], orignal.shape[1]), interpolation=cv2.INTER_NEAREST)
 
         found_attributes = [attributes[idx] for idx in np.unique(out)]
         print(found_attributes)
