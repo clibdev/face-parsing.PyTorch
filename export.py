@@ -15,7 +15,7 @@ if __name__ == '__main__':
 
     net = BiSeNet(n_classes=19, training=False)
     net.to(device)
-    net.load_state_dict(torch.load(args.model_path))
+    net.load_state_dict(torch.load(args.model_path, weights_only=True))
     net.eval()
 
     model_path = os.path.splitext(args.model_path)[0] + '.onnx'
